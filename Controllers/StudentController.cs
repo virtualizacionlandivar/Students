@@ -70,13 +70,18 @@ public async Task<ActionResult<Student>> PostStudent(Student student)
         {
             if (id != student.Id)
             {
-                return BadRequest();
+                return BadRequest(new { message = "El ID no coincide." });
             }
-
             _context.Entry(student).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+                {
+                    await _context.SaveChangesAsync();
+                    return Ok(student); // No devuelve JSON, solo un código 204 (éxito sin contenido)
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    return NotFound(new { message = "El estudiante no existe." });
+                }
         }
 
         // DELETE: api/student/5

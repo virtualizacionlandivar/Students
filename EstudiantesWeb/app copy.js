@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         editingStudentId = studentId; // Guardar el ID del estudiante en edición
                         const submitButton = document.getElementById("submit-btn");
                         if (submitButton) {
-                            submitButton.textContent = "Actualizar Estudiante"; // Cambiar texto del botón a "Actualizar Estudiante"
+                            submitButton.textContent = "Actualizar Estudiante"; // Asegurarse de que el botón exista
                         }
 
                         console.log("Editando estudiante con ID:", studentId); // Depuración
@@ -64,13 +64,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🔹 Cargar la lista de estudiantes al iniciar
     loadStudents();
 
-    // 🔹 Función para agregar un nuevo estudiante
+
+    //
     async function createStudent() {
         const studentData = {
             name: document.getElementById("name").value,
             email: document.getElementById("email").value,
+            grades: []
         };
-
+    
         try {
             const response = await fetch("http://localhost:5000/api/Student", {
                 method: "POST",
@@ -79,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 body: JSON.stringify(studentData)
             });
-
+    
             if (response.ok) {
                 alert("Estudiante agregado correctamente");
                 loadStudents(); // Recargar la lista después de agregar
@@ -91,8 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Error al enviar la solicitud:", error);
         }
-    }
-
+    }//
     // 🔹 Función para eliminar un estudiante
     async function deleteStudent(id) {
         if (!confirm("¿Seguro que deseas eliminar este estudiante?")) return;
@@ -113,41 +114,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 🔹 Función para actualizar un estudiante
+    //
     async function updateStudent(id) {
-        const studentData = {
-            name: document.getElementById("name").value,
-            email: document.getElementById("email").value
-        };
+    const studentData = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value
+        
+    };
 
-        try {
-            const response = await fetch(`http://localhost:5000/api/Student/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(studentData)
-            });
-            if (response.status === 204) { 
-                alert("Estudiante actualizado correctamente");
-                loadStudents(); // Recargar lista de estudiantes
-                return;
-            }
-
-            if (response.ok) {
-                const result = await response.json();
-                alert("Estudiante actualizado correctamente");
-                console.log(result);
-                loadStudents(); 
-            } else {
-                const errorText = await response.text();
-                console.error("Error:", errorText);
-                alert("Error al actualizar estudiante.");
-            }
-        } catch (error) {
-            console.error("Error en la solicitud:", error);
+    try {
+        const response = await fetch(`http://localhost:5000/api/Student/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(studentData)
+        });
+        if (response.status === 204) { 
+            alert("Estudiante actualizado correctamente");
+            loadStudents(); // Recargar lista de estudiantes
+            return;
         }
+
+        if (response.ok) {
+            const result = await response.json();
+            alert("Estudiante actualizado correctamente");
+            console.log(result);
+            loadStudents(); 
+        } else {
+            const errorText = await response.text();
+            console.error("Error:", errorText);
+            alert("Error al actualizar estudiante.");
+        }
+    } catch (error) {
+        console.error("Error en la solicitud:", error);
     }
+}
+
+    //
 
     // 🔹 Función para agregar o actualizar un estudiante
     studentForm.addEventListener("submit", function(event) {
@@ -165,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             id: editingStudentId,
             name: name,
             email: email,
+
         };
 
         console.log("Datos del estudiante a enviar:", studentData); // Depuración
@@ -200,7 +205,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } else {
             // 🔹 Si no hay ID en edición, hacer una petición POST para agregar
-            createStudent();  // Llamar a la función createStudent cuando no hay edición
+            fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(studentData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Error al agregar el estudiante");
+                }
+                return response.json();
+            })
+            .then(() => {
+                alert("Estudiante agregado correctamente");
+                loadStudents(); // Recargar la lista de estudiantes
+                studentForm.reset(); // Limpiar formulario
+            })
+            .catch(error => console.error("Error al agregar estudiante:", error));
         }
     });
 });
